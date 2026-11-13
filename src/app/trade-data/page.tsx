@@ -348,18 +348,28 @@ export default function MarketDataPage() {
     return "";
   };
 
-  const renderPositionCol = (col: string, item: any) => {
-    let val = item[col] ?? "-";
+  // const renderPositionCol = (col: string, item: any) => {
+  //   let val = item[col] ?? "-";
 
-    if (col === "urmtom") {
-      const netqty = Number(item.netqty || 0);
-      if (netqty !== 0) {
-        const lp = Number(item.lp || 0);
-        const rpnl = Number(item.rpnl || 0);
-        const calculatedUrmtom = rpnl + netqty * lp;
-        val = calculatedUrmtom.toFixed(2);
-      }
-    }
+  //   if (col === "urmtom") {
+  //     const netqty = Number(item.netqty || 0);
+  //     if (netqty !== 0) {
+  //       const lp = Number(item.lp || 0);
+  //       const rpnl = Number(item.rpnl || 0);
+  //       const calculatedUrmtom = rpnl + netqty * lp;
+  //       val = calculatedUrmtom.toFixed(2);
+  //     }
+  //   }
+
+  //   if (col === "rpnl" || col === "netqty" || col === "urmtom")
+  //     return <ColoredValue value={val} />;
+  //   if (col === "tsym")
+  //     return <span className="font-semibold text-foreground">{val}</span>;
+  //   return val;
+  // };
+
+  const renderPositionCol = (col: string, item: any) => {
+    const val = item[col] ?? "-";
 
     if (col === "rpnl" || col === "netqty" || col === "urmtom")
       return <ColoredValue value={val} />;
@@ -396,15 +406,21 @@ export default function MarketDataPage() {
     return val;
   };
 
-  const netMtm = positions.reduce((total, pos) => {
-    const netqty = Number(pos.netqty || 0);
-    const rpnl = Number(pos.rpnl || 0);
-    if (netqty !== 0) {
-      const lp = Number(pos.lp || 0);
-      return total + rpnl + netqty * lp;
-    }
-    return total + rpnl;
-  }, 0);
+  // const netMtm = positions.reduce((total, pos) => {
+  //   const netqty = Number(pos.netqty || 0);
+  //   const rpnl = Number(pos.rpnl || 0);
+  //   if (netqty !== 0) {
+  //     const lp = Number(pos.lp || 0);
+  //     return total + rpnl + netqty * lp;
+  //   }
+  //   return total + rpnl;
+  // }, 0);
+
+  // total MTM = realized (rpnl) + unrealized (urmtom), both from the broker
+  const netMtm = positions.reduce(
+    (total, pos) => total + Number(pos.rpnl || 0) + Number(pos.urmtom || 0),
+    0,
+  );
 
   return (
     <div className="space-y-8 pb-8">
