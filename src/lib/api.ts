@@ -1,4 +1,4 @@
-import { ConfigInput, LiveStrategy, PcrConfig } from "./types";
+import { ConfigInput, KillResult, LiveStrategy, PcrConfig } from "./types";
 
 const BASE = (process.env.NEXT_PUBLIC_BASE_URL ?? "").replace(/\/+$/, "");
 
@@ -45,3 +45,7 @@ export const deleteConfig = (id: string) =>
 // for refreshing instruments data from the exchange, this is a long-running operation so we don't wait for it to finish
 export const refreshInstruments = () =>
   request<unknown>("/market/refresh-instruments");
+
+// close all open positions of this config and set it INACTIVE
+export const killConfig = (id: string) =>
+  request<KillResult>(`/pcr-strategy/config/${id}/kill`, { method: "POST" });

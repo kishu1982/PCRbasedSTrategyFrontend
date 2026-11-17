@@ -1,7 +1,7 @@
 "use client";
 import { useCallback, useEffect, useState } from "react";
 import { Plus, RefreshCw } from "lucide-react";
-import { deleteConfig, getConfigs, getLive } from "@/lib/api";
+import { deleteConfig, getConfigs, getLive, killConfig } from "@/lib/api";
 import { LiveStrategy, PcrConfig } from "@/lib/types";
 import ConfigForm from "@/components/ConfigForm";
 import ConfirmDialog from "@/components/ConfirmDialog";
@@ -22,6 +22,12 @@ export default function OptionStrategyPage() {
   const [toDelete, setToDelete] = useState<PcrConfig | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState("");
+
+  // kill switch flow
+  const [toKill, setToKill] = useState<PcrConfig | null>(null);
+  const [killing, setKilling] = useState(false);
+  const [killError, setKillError] = useState("");
+  const [killMsg, setKillMsg] = useState("");
 
   const load = useCallback(async (manual = false) => {
     if (manual) setSpinning(true);
@@ -58,6 +64,40 @@ export default function OptionStrategyPage() {
       setDeleting(false);
     }
   };
+  const confirmKill = async () => {
+    if (!toKill) return;
+    setKilling(true);
+    setKillError("");
+    try {
+      const res = await killConfig(toKill.id);
+      if (res.status === "FAILED") {
+        // config is already INACTIVE; keep the dialog open so the user can retry
+        const bad = res.orders.filter((o) => o.ok === false);
+        setKillError(
+          res.reason ??
+            bad.map((o) => `${o.tradingSymbol}: ${o.error}`).join("; ") ??
+            "Some orders failed",
+        );
+        load(true);
+        return;
+      }
+      const label =
+        res.status === "NOOP"
+          ? "No open positions to close."
+          : res.status === "DRY_RUN"
+            ? `Dry run: ${res.orders.length} closing order(s) planned, nothing sent (execution disabled).`
+            : `${res.orders.length} closing order(s) placed.`;
+      setKillMsg(
+        `${toKill.contractName} · ${toKill.pcrExpiry}: ${label} Configuration set to INACTIVE.`,
+      );
+      setToKill(null);
+      load(true);
+    } catch (err: any) {
+      setKillError(err.message || "Kill failed");
+    } finally {
+      setKilling(false);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -91,6 +131,15 @@ export default function OptionStrategyPage() {
         </div>
       )}
 
+      {killMsg && (
+        <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 text-emerald-600 text-sm p-3 flex justify-between gap-3">
+          <span>{killMsg}</span>
+          <button onClick={() => setKillMsg("")} className="font-semibold">
+            ✕
+          </button>
+        </div>
+      )}
+
       {loading ? (
         <p className="text-neutral-500">Loading…</p>
       ) : configs.length === 0 ? (
@@ -104,6 +153,10 @@ export default function OptionStrategyPage() {
             config={c}
             live={liveFor(c.id)}
             onEdit={() => setForm({ mode: "edit", config: c })}
+            onKill={() => {
+              setKillError("");
+              setToKill(c);
+            }}
             onDelete={() => {
               setDeleteError("");
               setToDelete(c);
@@ -143,6 +196,25 @@ export default function OptionStrategyPage() {
           error={deleteError}
           onConfirm={confirmDelete}
           onCancel={() => setToDelete(null)}
+        />
+      )}
+
+      {toKill && (
+        <ConfirmDialog
+          title="Kill switch"
+          message={
+            <>
+              Are you sure you want to close <b>all open positions</b> and set{" "}
+              <b>
+                {toKill.contractName} · {toKill.pcrExpiry}
+              </b>{" "}
+              to INACTIVE?
+            </>
+          }
+          busy={killing}
+          error={killError}
+          onConfirm={confirmKill}
+          onCancel={() => setToKill(null)}
         />
       )}
     </div>

@@ -21,7 +21,9 @@ const DEFAULTS: ConfigInput = {
   timeframeMinutes: 5,
   lotsPerTrade: 1,
   status: "INACTIVE",
-  pcrStartLevel: 1,
+  pcrBullishStartLevel: 1.2,
+  pcrBearishStartLevel: 0.8,
+  strikesAroundAtm: 0,
   side: "BUY",
   underlyingExchange: "NSE",
   underlyingToken: "26000",
@@ -113,7 +115,12 @@ export default function ConfigForm({
 
   const [base] = useState<ConfigInput>(() => {
     if (!initial) return DEFAULTS;
-    const o: any = {};
+    // const o: any = {};
+    const o: any = {
+      pcrBullishStartLevel: 1.2,
+      pcrBearishStartLevel: 0.8,
+      strikesAroundAtm: 0,
+    };
     KEYS.forEach((k) => {
       if ((initial as any)[k] !== undefined) o[k] = (initial as any)[k];
     });
@@ -142,6 +149,14 @@ export default function ConfigForm({
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!(f.pcrBearishStartLevel < f.pcrBullishStartLevel)) {
+      setError("Bearish start level must be lower than bullish start level");
+      return;
+    }
+    if (f.strikesAroundAtm < 0 || !Number.isInteger(f.strikesAroundAtm)) {
+      setError("Strikes around ATM must be a whole number (0 = all)");
+      return;
+    }
     setSaving(true);
     setError("");
     try {
@@ -262,13 +277,26 @@ export default function ConfigForm({
               onChange={(v) => set("status", v as ConfigInput["status"])}
             />
           </Field>
-          <Field label="PCR Start Level">
+          <Field label="Bullish Start Level (above)">
             <input
               type="number"
               step="any"
               className={inputCls}
-              value={f.pcrStartLevel}
-              onChange={(e) => set("pcrStartLevel", Number(e.target.value))}
+              value={f.pcrBullishStartLevel}
+              onChange={(e) =>
+                set("pcrBullishStartLevel", Number(e.target.value))
+              }
+            />
+          </Field>
+          <Field label="Bearish Start Level (below)">
+            <input
+              type="number"
+              step="any"
+              className={inputCls}
+              value={f.pcrBearishStartLevel}
+              onChange={(e) =>
+                set("pcrBearishStartLevel", Number(e.target.value))
+              }
             />
           </Field>
           <Field label="Side">
@@ -291,6 +319,16 @@ export default function ConfigForm({
               className={inputCls}
               value={f.underlyingToken}
               onChange={(e) => set("underlyingToken", e.target.value)}
+            />
+          </Field>
+          <Field label="Strikes Around ATM (0 = All)">
+            <input
+              type="number"
+              min={0}
+              step={1}
+              className={inputCls}
+              value={f.strikesAroundAtm}
+              onChange={(e) => set("strikesAroundAtm", Number(e.target.value))}
             />
           </Field>
 

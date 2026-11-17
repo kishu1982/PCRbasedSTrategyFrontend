@@ -12,7 +12,9 @@ export interface ConfigInput {
   timeframeMinutes: number;
   lotsPerTrade: number;
   status: Status;
-  pcrStartLevel: number;
+  pcrBullishStartLevel: number; // default 1.2
+  pcrBearishStartLevel: number; // default 0.8
+  strikesAroundAtm: number; // 0 = all strikes
   side: Side;
   underlyingExchange: string;
   underlyingToken: string;
@@ -52,7 +54,8 @@ export interface LiveStrategy {
   totalCallOi: number;
   totalPutOi: number;
   pcr: number;
-  pcrStartLevel: number;
+  pcrBullishStartLevel: number;
+  pcrBearishStartLevel: number;
   pcrStep: number;
   lots: {
     direction: string;
@@ -101,4 +104,17 @@ export interface LiveStrategy {
     error?: string;
   };
   updatedAt: string;
+}
+
+export interface KillResult {
+  status: "SKIPPED" | "NOOP" | "DRY_RUN" | "EXECUTED" | "FAILED";
+  reason?: string;
+  configStatus: string;
+  orders: {
+    tradingSymbol: string;
+    side: string;
+    quantity: number;
+    ok?: boolean;
+    error?: string;
+  }[];
 }
