@@ -410,9 +410,9 @@ export default function StrategyCard({
                   bear={live.pcrBearishStartLevel ?? bear}
                   bull={live.pcrBullishStartLevel ?? bull}
                 />
-                <div className="mt-2 text-xs text-neutral-600 dark:text-neutral-400">
+                <div className="mt-2 text-xl text-purple-800 dark:text-neutral-400">
                   Lots: <b>{live.lots.pcrLots}</b> × {live.lots.lotsPerTrade} ={" "}
-                  <b>{live.lots.targetLots}</b> target
+                  <b>{live.lots.targetLots}</b> Target lots
                 </div>
               </div>
 
