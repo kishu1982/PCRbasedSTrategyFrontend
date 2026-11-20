@@ -1,12 +1,13 @@
 "use client";
 import { useCallback, useEffect, useState } from "react";
-import { Plus, RefreshCw } from "lucide-react";
+import { Plus, RefreshCw, Volume2, VolumeX } from "lucide-react";
 import { deleteConfig, getConfigs, getLive, killConfig } from "@/lib/api";
 import { LiveStrategy, PcrConfig } from "@/lib/types";
 import ConfigForm from "@/components/ConfigForm";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import StrategyCard from "@/components/StrategyCard";
 import { cn } from "@/lib/utils";
+import { useTradeAlert } from "@/lib/useTradeAlert";
 
 type FormState = null | { mode: "add" } | { mode: "edit"; config: PcrConfig };
 
@@ -17,6 +18,10 @@ export default function OptionStrategyPage() {
   const [loading, setLoading] = useState(true);
   const [spinning, setSpinning] = useState(false);
   const [form, setForm] = useState<FormState>(null);
+
+  // for alerts
+  const [soundOn, setSoundOn] = useState(false);
+  const { unlock, playAlert } = useTradeAlert(live, soundOn);
 
   // delete flow
   const [toDelete, setToDelete] = useState<PcrConfig | null>(null);
@@ -47,6 +52,21 @@ export default function OptionStrategyPage() {
     const id = setInterval(() => load(), 10_000);
     return () => clearInterval(id);
   }, [load]);
+
+  // for sound alerts, play a sound if any config's totalOpenLots changed since last load
+  useEffect(() => {
+    setSoundOn(localStorage.getItem("tradeSound") === "1");
+  }, []);
+
+  const toggleSound = () => {
+    const next = !soundOn;
+    setSoundOn(next);
+    localStorage.setItem("tradeSound", next ? "1" : "0");
+    if (next) {
+      unlock(); // user click → allowed to play audio
+      playAlert(); // test ring so you know it works
+    }
+  };
 
   const liveFor = (id: string) => live.find((l) => l.configId === id);
 
@@ -109,6 +129,22 @@ export default function OptionStrategyPage() {
           </p>
         </div>
         <div className="flex gap-2">
+          <button
+            onClick={toggleSound}
+            className={cn(
+              "flex items-center gap-2 px-3 py-2 rounded-lg border text-sm",
+              soundOn
+                ? "border-emerald-500/40 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10"
+                : "border-neutral-300 dark:border-neutral-700",
+            )}
+          >
+            {soundOn ? (
+              <Volume2 className="h-4 w-4" />
+            ) : (
+              <VolumeX className="h-4 w-4" />
+            )}
+            Sound {soundOn ? "On" : "Off"}
+          </button>
           <button
             onClick={() => load(true)}
             className="flex items-center gap-2 px-3 py-2 rounded-lg border border-neutral-300 dark:border-neutral-700 text-sm"
