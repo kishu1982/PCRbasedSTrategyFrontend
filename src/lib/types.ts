@@ -50,7 +50,13 @@ export interface LiveStrategy {
   strategyActive: boolean;
   side: string;
   timeframeMinutes: number;
-  underlying: { exchange: string; token: string; ltp: number };
+  underlying: {
+    exchange: string;
+    token: string;
+    ltp: number;
+    spotLtp?: number | null;
+    source?: "SPOT" | "SYNTHETIC";
+  };
   totalCallOi: number;
   totalPutOi: number;
   pcr: number;
@@ -80,6 +86,17 @@ export interface LiveStrategy {
   totalOpenLots: number;
   positionsOk: boolean;
   feed: { totalStrikes: number; received: number; coverage: number };
+  pcrStrikes?: {
+    strikesAroundAtm: number; // 0 = all strikes
+    atmStrike: number | null;
+    callCount: number;
+    putCount: number;
+    strikes: {
+      strike: number;
+      ce: { tradingSymbol: string; token: string; oi: number | null } | null;
+      pe: { tradingSymbol: string; token: string; oi: number | null } | null;
+    }[];
+  };
   lastExecution: null | {
     at: string;
     pcr: number;

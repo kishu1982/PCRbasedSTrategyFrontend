@@ -649,7 +649,80 @@ export default function StrategyCard({
                   ))}
               </div>
             )}
+            {/* STRIKES USED FOR PCR */}
+            {live.pcrStrikes && (
+              <div className="space-y-2">
+                <SectionTitle tone="sky">Strikes used for PCR</SectionTitle>
 
+                <div className="flex flex-wrap gap-2">
+                  <Pill tone="sky">
+                    {live.pcrStrikes.strikesAroundAtm
+                      ? `±${live.pcrStrikes.strikesAroundAtm} around ATM`
+                      : "All strikes"}
+                  </Pill>
+                  <Pill tone="amber">
+                    ATM {live.pcrStrikes.atmStrike ?? "-"}
+                  </Pill>
+                  <Pill tone="emerald">{live.pcrStrikes.callCount} calls</Pill>
+                  <Pill tone="rose">{live.pcrStrikes.putCount} puts</Pill>
+                </div>
+
+                <div className="overflow-x-auto rounded-xl border border-neutral-200 dark:border-neutral-800">
+                  <table className="w-full text-sm">
+                    <thead className="bg-sky-50 dark:bg-sky-500/10 text-xs uppercase text-sky-600 dark:text-sky-400">
+                      <tr>
+                        <th className="px-3 py-2 text-right">Call OI</th>
+                        <th className="px-3 py-2 text-left">Call</th>
+                        <th className="px-3 py-2 text-center">Strike</th>
+                        <th className="px-3 py-2 text-left">Put</th>
+                        <th className="px-3 py-2 text-right">Put OI</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {live.pcrStrikes.strikes.map((s) => (
+                        <tr
+                          key={s.strike}
+                          className={cn(
+                            "border-t border-neutral-200 dark:border-neutral-800",
+                            s.strike === live.pcrStrikes!.atmStrike &&
+                              "bg-amber-50 dark:bg-amber-500/10 font-semibold",
+                          )}
+                        >
+                          <td className="px-3 py-1.5 text-right text-rose-600 dark:text-rose-400">
+                            {n(s.ce?.oi, 0)}
+                          </td>
+                          <td className="px-3 py-1.5 text-xs text-neutral-500">
+                            {s.ce?.tradingSymbol ?? "-"}
+                          </td>
+                          <td className="px-3 py-1.5 text-center font-bold">
+                            {s.strike}
+                          </td>
+                          <td className="px-3 py-1.5 text-xs text-neutral-500">
+                            {s.pe?.tradingSymbol ?? "-"}
+                          </td>
+                          <td className="px-3 py-1.5 text-right text-emerald-600 dark:text-emerald-400">
+                            {n(s.pe?.oi, 0)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                    <tfoot className="border-t-2 border-neutral-300 dark:border-neutral-700 font-bold">
+                      <tr>
+                        <td className="px-3 py-2 text-right">
+                          {n(live.totalCallOi, 0)}
+                        </td>
+                        <td />
+                        <td className="px-3 py-2 text-center">Total</td>
+                        <td />
+                        <td className="px-3 py-2 text-right">
+                          {n(live.totalPutOi, 0)}
+                        </td>
+                      </tr>
+                    </tfoot>
+                  </table>
+                </div>
+              </div>
+            )}
             <p className="text-xs text-neutral-500">
               Live updated: {new Date(live.updatedAt).toLocaleString("en-IN")}
             </p>
