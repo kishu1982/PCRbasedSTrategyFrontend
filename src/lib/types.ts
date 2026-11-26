@@ -20,6 +20,8 @@ export interface ConfigInput {
   underlyingToken: string;
   // only returned by the API / editable via PATCH
   pcrStep?: number;
+  pcrBullishStep?: number; // default 0.1
+  pcrBearishStep?: number; // default 0.1
   productType?: string;
 }
 
@@ -62,7 +64,9 @@ export interface LiveStrategy {
   pcr: number;
   pcrBullishStartLevel: number;
   pcrBearishStartLevel: number;
-  pcrStep: number;
+  // pcrStep: number;
+  pcrBullishStep: number;
+  pcrBearishStep: number;
   lots: {
     direction: string;
     pcrLots: number;

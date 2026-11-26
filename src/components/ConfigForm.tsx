@@ -21,8 +21,10 @@ const DEFAULTS: ConfigInput = {
   timeframeMinutes: 5,
   lotsPerTrade: 1,
   status: "INACTIVE",
-  pcrBullishStartLevel: 1.2,
-  pcrBearishStartLevel: 0.8,
+  pcrBullishStartLevel: 1.1,
+  pcrBullishStep: 0.15,
+  pcrBearishStartLevel: 0.9,
+  pcrBearishStep: 0.1,
   strikesAroundAtm: 0,
   side: "BUY",
   underlyingExchange: "NSE",
@@ -117,8 +119,10 @@ export default function ConfigForm({
     if (!initial) return DEFAULTS;
     // const o: any = {};
     const o: any = {
-      pcrBullishStartLevel: 1.2,
-      pcrBearishStartLevel: 0.8,
+      pcrBullishStartLevel: 1.1,
+      pcrBearishStartLevel: 0.9,
+      pcrBullishStep: initial.pcrStep ?? 0.1,
+      pcrBearishStep: initial.pcrStep ?? 0.1,
       strikesAroundAtm: 0,
     };
     KEYS.forEach((k) => {
@@ -153,6 +157,12 @@ export default function ConfigForm({
       setError("Bearish start level must be lower than bullish start level");
       return;
     }
+
+    if (!((f.pcrBullishStep ?? 0) > 0) || !((f.pcrBearishStep ?? 0) > 0)) {
+      setError("Bullish and bearish PCR steps must be greater than 0");
+      return;
+    }
+
     if (f.strikesAroundAtm < 0 || !Number.isInteger(f.strikesAroundAtm)) {
       setError("Strikes around ATM must be a whole number (0 = all)");
       return;
@@ -299,6 +309,26 @@ export default function ConfigForm({
               }
             />
           </Field>
+          <Field label="Bullish PCR Step">
+            <input
+              type="number"
+              step="0.01"
+              min="0.01"
+              className={inputCls}
+              value={f.pcrBullishStep ?? ""}
+              onChange={(e) => set("pcrBullishStep", Number(e.target.value))}
+            />
+          </Field>
+          <Field label="Bearish PCR Step">
+            <input
+              type="number"
+              step="0.01"
+              min="0.01"
+              className={inputCls}
+              value={f.pcrBearishStep ?? ""}
+              onChange={(e) => set("pcrBearishStep", Number(e.target.value))}
+            />
+          </Field>
           <Field label="Side">
             <Select
               value={f.side}
@@ -334,7 +364,7 @@ export default function ConfigForm({
 
           {editing && (
             <>
-              <Field label="PCR Step">
+              {/* <Field label="PCR Step">
                 <input
                   type="number"
                   step="any"
@@ -342,7 +372,7 @@ export default function ConfigForm({
                   value={f.pcrStep ?? ""}
                   onChange={(e) => set("pcrStep", Number(e.target.value))}
                 />
-              </Field>
+              </Field> */}
               <Field label="Product Type">
                 <input
                   className={inputCls}

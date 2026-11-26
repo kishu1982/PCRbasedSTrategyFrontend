@@ -358,9 +358,14 @@ export default function StrategyCard({
                 className="text-rose-700 dark:text-rose-300 text-base"
               />
               <Stat
-                tone="amber"
-                label="PCR Step"
-                value={config.pcrStep ?? "-"}
+                tone="emerald"
+                label="Bullish step"
+                value={config.pcrBullishStep ?? config.pcrStep ?? "-"}
+              />
+              <Stat
+                tone="rose"
+                label="Bearish step"
+                value={config.pcrBearishStep ?? config.pcrStep ?? "-"}
               />
               <Stat
                 tone="amber"
